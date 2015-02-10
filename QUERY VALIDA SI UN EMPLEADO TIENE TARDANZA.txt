@@ -1,0 +1,22 @@
+--CUADRO COMPARATIVO, SI UN EMPLEADO TIENE TARDANZA AL REGRESAR DE SU TIEMPO DE ALMUERZO
+--SIRVE PARA EXCLUIR EMPLEADOS QUE SE TARDAN A LA HORA DE ENTRADA 2 (ALMUERZO) 
+
+select  
+      SUM(  CASE WHEN   ( (to_date(nvl(h.hora_entrada2,0)||':'|| nvl(h.minuto_entrada2,0 ),'HH24:MI  ss')-
+      to_date( nvl(h.hora_salida1,0) ||':'||nvl(h.minuto_salida1,0 ),'HH24:MI  ss')) * (60 * 24)   )   
+      <= ((nvl(j.tiempo_descanso,0) * 60)+(select p.minimo_tardanza from smw.smw_parameters p) )          THEN
+      0
+      ELSE
+      1
+      END  
+      )tardanza
+                  
+FROM    smw.smw_horascalculadas h 
+INNER JOIN  smw.smw_horasjornada j on j.codigo=h.codigo_hjornada and j.estatus='A'
+ WHERE   h.fecha_marcacion between to_date('12/05/2014','mm/dd/yyyy') and  to_date('12/07/2014','mm/dd/yyyy')  
+         and (select  
+		      j.job_class
+              from employee e 
+              inner join jobcode j on e.job_code=j.job_code
+              where e.employee=h.empleado)<3
+ AND h.empleado=28897
